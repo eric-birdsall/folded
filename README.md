@@ -2,6 +2,8 @@
 
 Folded is a same-room drawing and guessing game for two teams sharing one device. An artist draws a secret word. A player on the other team folds a strip out of the drawing. Then the artist's team guesses what's left.
 
+[Play Folded](https://eric-birdsall.github.io/folded/) in your browser. Every push to `main` is tested and deployed to GitHub Pages.
+
 Run `npm ci` and `npm run dev`, then open the URL Vite prints. `npm test` runs the logic tests, and `npm run build` makes a static build. No backend is needed. Like Drunk Drawing, it works with touch or a mouse. There are no controller controls.
 
 ## A round
