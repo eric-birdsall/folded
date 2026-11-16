@@ -1,0 +1,673 @@
+/* Drunk Drawing's paper-and-pencil look, warmed up for a backyard party.
+   The drawing paper itself is always white with black ink. */
+:root {
+  color-scheme: light;
+  --bg: #e9e4d4;
+  --table: #d9d1b9;
+  --ink: #263a35;
+  --muted: #5b6a62;
+  --line: #b4b29f;
+  --surface: #f6f2e6;
+  --surface-shadow: #cdc6b0;
+  --button: #fdfaf0;
+  --button-active: #e4e9d9;
+  --primary: #263a35;
+  --primary-text: #fdfaf0;
+  --pencil: #c4452f;
+  --good: #2f8a4c;
+  --team-0: #e3742f;
+  --team-1: #2f7fc1;
+  --note: #f8e8ab;
+  color: var(--ink);
+  background: var(--bg);
+  font:
+    16px/1.45 Inter,
+    system-ui,
+    sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #161b1a;
+    --table: #0f1312;
+    --ink: #ece8da;
+    --muted: #9aa69f;
+    --line: #3a4441;
+    --surface: #1f2725;
+    --surface-shadow: #0b0f0e;
+    --button: #26302d;
+    --button-active: #34423e;
+    --primary: #ece8da;
+    --primary-text: #161b1a;
+    --pencil: #ef8a72;
+    --good: #6fcf8d;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  background: var(--bg);
+}
+[hidden] {
+  display: none !important;
+}
+h1,
+h2,
+p,
+ul,
+figure {
+  margin: 0;
+}
+h1,
+h2 {
+  font-family: Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+button {
+  min-height: 3rem;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--ink);
+  border-radius: 0.35rem;
+  background: var(--button);
+  font-weight: 650;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+button:not(:disabled):active {
+  background: var(--button-active);
+  transform: translateY(1px);
+}
+button.primary {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-text);
+}
+button.big {
+  min-height: 3.6rem;
+  padding-inline: 1.8rem;
+  font-size: 1.2rem;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+:focus-visible {
+  outline: 3px solid var(--pencil);
+  outline-offset: 3px;
+}
+input,
+select {
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: var(--button);
+}
+.eyebrow {
+  color: var(--muted);
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+}
+.icon-button {
+  width: 3rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.icon-button svg {
+  width: 1.5rem;
+  height: 1.5rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.icon-button .icon-muted,
+.icon-button[aria-pressed="true"] .icon-sound {
+  display: none;
+}
+.icon-button[aria-pressed="true"] .icon-muted {
+  display: block;
+}
+
+.app,
+.screen {
+  min-height: 100dvh;
+}
+.screen {
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+}
+
+/* ---------- Setup ---------- */
+.setup,
+.results,
+.over {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 980px;
+  margin: 0 auto;
+  text-align: center;
+}
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+  margin-top: 0.5rem;
+}
+.hero h1 {
+  font-size: clamp(3rem, 10vw, 5rem);
+  line-height: 1;
+}
+.tagline {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+.mark {
+  width: clamp(4.5rem, 14vw, 6.5rem);
+  transform: rotate(-4deg);
+  filter: drop-shadow(3px 4px 0 var(--surface-shadow));
+}
+.mark-paper {
+  fill: #fff;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+.mark-strip {
+  fill: var(--pencil);
+  opacity: 0.35;
+}
+.mark-ink {
+  fill: none;
+  stroke: #111;
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+.teams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+.team-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 6px solid var(--team);
+  border-radius: 0.5rem;
+  box-shadow: 3px 4px 0 var(--surface-shadow);
+  text-align: left;
+}
+.team-card .team-name {
+  font:
+    700 1.4rem Georgia,
+    serif;
+  border-color: transparent;
+  background: transparent;
+  padding-inline: 0.25rem;
+}
+.team-card .team-name:focus {
+  border-color: var(--line);
+  background: var(--button);
+}
+.player-row {
+  display: flex;
+  gap: 0.4rem;
+}
+.player-row input {
+  flex: 1;
+  min-width: 0;
+}
+.player-row button {
+  width: 3rem;
+  padding: 0;
+}
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+}
+.options label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  text-align: left;
+  font-weight: 650;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+.error {
+  min-height: 1.5em;
+  color: var(--pencil);
+  font-weight: 650;
+}
+
+/* ---------- Play ---------- */
+.play {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.6rem;
+  height: 100dvh;
+  overflow: hidden;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  flex-wrap: wrap;
+}
+.round-label {
+  font-weight: 650;
+  color: var(--muted);
+}
+.word-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.3rem 0.9rem;
+  background: var(--note);
+  color: #263a35;
+  border: 2px solid #263a35;
+  border-radius: 0.3rem;
+  box-shadow: 3px 3px 0 rgb(0 0 0 / 0.2);
+  transform: rotate(-1deg);
+}
+.word-chip strong {
+  font:
+    700 1.6rem Georgia,
+    serif;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.clock {
+  margin-left: auto;
+  font-size: 1.7rem;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+.clock.urgent {
+  color: var(--pencil);
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  50% {
+    transform: scale(1.08);
+  }
+}
+.scores {
+  display: flex;
+  gap: 0.4rem;
+}
+.topbar .scores {
+  margin-left: auto;
+}
+.clock:not([hidden]) + .scores {
+  margin-left: 0;
+}
+.score {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--team);
+  font-weight: 650;
+}
+.score b {
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+.score.active {
+  background: var(--team);
+  color: #fff;
+}
+.scores.big .score {
+  padding: 0.5rem 1.1rem;
+  font-size: 1.15rem;
+}
+.scores.big .score b {
+  font-size: 1.6rem;
+}
+.score .gain {
+  color: var(--good);
+  font-weight: 800;
+}
+.score.active .gain {
+  color: #fff;
+}
+
+.paper-space {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  background: var(--table);
+  border-radius: 0.6rem;
+}
+.paper {
+  display: block;
+  touch-action: none;
+  filter: drop-shadow(3px 5px 0 rgb(0 0 0 / 0.18));
+  border-radius: 2px;
+}
+.paper.drawing {
+  cursor: crosshair;
+}
+.paper.thump {
+  animation: thump 360ms ease-out;
+}
+@keyframes thump {
+  35% {
+    transform: scale(1.025) rotate(-0.4deg);
+  }
+}
+.paper:focus-visible {
+  outline-offset: 6px;
+}
+.cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: var(--surface);
+  border-radius: 0.6rem;
+}
+.cover h2 {
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1.05;
+}
+.cover p:not(.eyebrow) {
+  max-width: 34ch;
+  font-size: 1.15rem;
+  color: var(--muted);
+}
+.cover .team-tag {
+  color: var(--team);
+}
+.splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: rgb(0 0 0 / 0.35);
+  border-radius: 0.6rem;
+  pointer-events: none;
+  animation: splash 1.8s ease-in forwards;
+}
+.splash span {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+}
+.splash strong {
+  padding: 0.4rem 1.6rem;
+  background: var(--note);
+  color: #263a35;
+  border: 3px solid #263a35;
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 0.25);
+  font:
+    700 clamp(2.4rem, 9vw, 5rem) Georgia,
+    serif;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+}
+@keyframes splash {
+  0% {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  12%,
+  75% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30%) scale(0.6);
+  }
+}
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 1rem;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: var(--primary-text);
+  border-radius: 999px;
+  font-weight: 650;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 1rem;
+  min-height: 3.6rem;
+}
+.hint {
+  color: var(--muted);
+  font-weight: 600;
+}
+.tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-left: auto;
+}
+.guess-form {
+  flex: 1 1 100%;
+  flex-direction: column;
+  align-items: stretch;
+  margin: 0;
+}
+.guessers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+.guessers button {
+  min-height: 2.6rem;
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+}
+.guessers button[aria-checked="true"] {
+  background: var(--team);
+  border-color: var(--team);
+  color: #fff;
+}
+.guessers .artist-tag {
+  padding: 0.3rem 0.8rem;
+  border: 1px dashed var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+}
+.guess-row {
+  display: flex;
+  gap: 0.5rem;
+}
+.guess-row input {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.2rem;
+}
+.guess-log {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0;
+  list-style: none;
+  min-height: 1.8rem;
+}
+.guess-log li {
+  padding: 0.15rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  text-decoration: line-through;
+  text-decoration-color: var(--pencil);
+  color: var(--muted);
+}
+.guess-log li.fresh {
+  animation: shake 360ms ease-out;
+}
+@keyframes shake {
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+}
+
+/* ---------- Results and game over ---------- */
+.results {
+  justify-content: center;
+}
+.results h2,
+.over h2 {
+  font-size: clamp(2.2rem, 7vw, 4rem);
+  line-height: 1.05;
+}
+.results h2.guessed {
+  color: var(--good);
+}
+.answer {
+  font-size: 1.3rem;
+}
+.answer strong {
+  font:
+    700 1.8rem Georgia,
+    serif;
+  text-transform: uppercase;
+}
+.pair {
+  display: flex;
+  gap: clamp(0.75rem, 3vw, 2rem);
+  justify-content: center;
+  width: 100%;
+}
+.pair figure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: min(42vw, 52dvh, 420px);
+}
+.pair figure:first-child {
+  transform: rotate(-1.5deg);
+}
+.pair figure:last-child {
+  transform: rotate(1.5deg);
+}
+.pair canvas,
+.gallery canvas {
+  filter: drop-shadow(2px 4px 0 rgb(0 0 0 / 0.18));
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+}
+figcaption {
+  font-weight: 700;
+  color: var(--muted);
+}
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+.gallery-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-top: 5px solid var(--team);
+  border-radius: 0.5rem;
+}
+.gallery-item .thumbs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.gallery-item strong {
+  font-family: Georgia, serif;
+  text-transform: capitalize;
+  font-size: 1.15rem;
+}
+.gallery-item small {
+  color: var(--muted);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+@media (max-width: 640px) {
+  .word-chip strong {
+    font-size: 1.25rem;
+  }
+  .clock {
+    font-size: 1.4rem;
+  }
+  /* Team color says which is which; the names need the room. */
+  .topbar .score > span:not(.gain) {
+    display: none;
+  }
+  .topbar {
+    gap: 0.4rem 0.6rem;
+  }
+  .round-label {
+    font-size: 0.85rem;
+  }
+  .pair figure {
+    width: 46vw;
+  }
+}

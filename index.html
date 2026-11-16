@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#e9e4d4" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Folded</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <!-- Setup: teams and options -->
+      <section class="screen setup" data-screen="setup">
+        <header class="hero">
+          <svg class="mark" viewBox="0 0 120 120" aria-hidden="true">
+            <path class="mark-paper" d="M14 14h92v38H14z" />
+            <path class="mark-strip" d="M14 52h92v12H14z" />
+            <path class="mark-paper" d="M14 64h92v42H14z" />
+            <path
+              class="mark-ink"
+              d="M36 92c8-14 16-26 30-26M66 66c10 0 18 10 20 22M46 46c-2-10 4-20 14-20s16 10 14 20"
+            />
+          </svg>
+          <div>
+            <h1>Folded</h1>
+            <p class="tagline" data-tagline></p>
+          </div>
+        </header>
+
+        <div class="teams" data-teams></div>
+
+        <div class="options">
+          <label>
+            <span>Rounds per team</span>
+            <select data-option="roundsPerTeam">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+          <label>
+            <span>Drawing time</span>
+            <select data-option="drawMs">
+              <option value="45000">45 s</option>
+              <option value="60000">60 s</option>
+              <option value="75000" selected>75 s</option>
+              <option value="90000">90 s</option>
+              <option value="120000">2 min</option>
+            </select>
+          </label>
+          <label>
+            <span>Fold width</span>
+            <select data-option="foldWidth">
+              <option value="thin">Thin</option>
+              <option value="normal" selected>Normal</option>
+              <option value="chunky">Chunky</option>
+            </select>
+          </label>
+          <label>
+            <span>Words</span>
+            <select data-option="difficulties">
+              <option value="easy" selected>Easy</option>
+              <option value="easy,medium">Easy + medium</option>
+              <option value="medium">Medium</option>
+            </select>
+          </label>
+        </div>
+
+        <p class="error" data-setup-error role="alert"></p>
+        <button type="button" class="primary big" data-start></button>
+      </section>
+
+      <!-- Play: one paper, a top bar and a tool bar -->
+      <section class="screen play" data-screen="play" hidden>
+        <header class="topbar">
+          <div class="round-label" data-round-label></div>
+          <div class="word-chip" data-word-chip hidden>
+            <span data-word-label></span>
+            <strong data-word></strong>
+          </div>
+          <div class="clock" data-clock hidden role="timer"></div>
+          <div class="scores" data-scores></div>
+          <button type="button" class="icon-button" data-mute aria-label="Mute sound" aria-pressed="false">
+            <svg class="icon-sound" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4Z" />
+              <path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" />
+            </svg>
+            <svg class="icon-muted" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4Z" />
+              <path d="M15.5 9.5l5 5M20.5 9.5l-5 5" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="paper-space" data-paper-space>
+          <canvas class="paper" data-paper aria-label="Drawing paper"></canvas>
+          <div class="cover" data-cover hidden>
+            <p class="eyebrow" data-cover-eyebrow></p>
+            <h2 data-cover-title></h2>
+            <p data-cover-note></p>
+            <button type="button" class="primary big" data-cover-action></button>
+          </div>
+          <div class="splash" data-splash hidden aria-live="polite">
+            <span data-splash-label></span>
+            <strong data-splash-word></strong>
+          </div>
+          <p class="toast" data-toast hidden role="status"></p>
+        </div>
+
+        <footer class="toolbar">
+          <p class="hint" data-hint></p>
+          <div class="tools" data-tools="drawing" hidden>
+            <button type="button" data-undo></button>
+            <button type="button" data-clear></button>
+            <button type="button" class="primary" data-submit></button>
+          </div>
+          <div class="tools" data-tools="sabotage" hidden>
+            <button type="button" class="primary" data-confirm disabled></button>
+          </div>
+          <form class="tools guess-form" data-tools="guessing" hidden autocomplete="off">
+            <div class="guessers" data-guessers role="radiogroup" aria-label="Who is guessing"></div>
+            <div class="guess-row">
+              <input type="text" data-guess-input enterkeyhint="send" autocapitalize="off" spellcheck="false" />
+              <button type="submit" class="primary" data-guess-button></button>
+              <button type="button" data-give-up></button>
+            </div>
+            <ul class="guess-log" data-guess-log aria-live="polite"></ul>
+          </form>
+        </footer>
+      </section>
+
+      <!-- Round results -->
+      <section class="screen results" data-screen="results" hidden>
+        <p class="eyebrow" data-result-eyebrow></p>
+        <h2 data-outcome></h2>
+        <p class="answer"><span data-answer-label></span> <strong data-answer></strong></p>
+        <div class="pair">
+          <figure>
+            <canvas data-before></canvas>
+            <figcaption data-before-label></figcaption>
+          </figure>
+          <figure>
+            <canvas data-after></canvas>
+            <figcaption data-after-label></figcaption>
+          </figure>
+        </div>
+        <div class="scores big" data-result-scores></div>
+        <button type="button" class="primary big" data-next></button>
+      </section>
+
+      <!-- Game over -->
+      <section class="screen over" data-screen="over" hidden>
+        <p class="eyebrow" data-final-label></p>
+        <h2 data-winner></h2>
+        <div class="scores big" data-final-scores></div>
+        <div class="gallery" data-gallery></div>
+        <div class="actions">
+          <button type="button" data-new-teams></button>
+          <button type="button" class="primary big" data-again></button>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
